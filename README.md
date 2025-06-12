@@ -16,8 +16,8 @@
 
 ---
 
-<p align="center"> Few lines describing your project.
-    <br> 
+<p align="center"> AISA Hackathon Project to find useful insights based on Hiking Dataset from Kaggle
+    <br>
 </p>
 
 ## 📝 Table of Contents
@@ -37,25 +37,16 @@
 
 ## 🧐 Problem Statement <a name = "problem_statement"></a>
 
-It is useful to design and follow a specific format when writing a problem statement. While there are several options
-for doing this, the following is a simple and straightforward template often used in Business Analysis to maintain
-focus on defining the problem.
-
-- IDEAL: This section is used to describe the desired or “to be” state of the process or product. At large, this section
-  should illustrate what the expected environment would look like once the solution is implemented.
-- REALITY: This section is used to describe the current or “as is” state of the process or product.
-- CONSEQUENCES: This section is used to describe the impacts on the business if the problem is not fixed or improved upon.
-  This includes costs associated with loss of money, time, productivity, competitive advantage, and so forth.
-
-Following this format will result in a workable document that can be used to understand the problem and elicit
-requirements that will lead to a winning solution.
+Hiking is one of the most healthy activities out there. Going out for a hike is a fun way to spend the weekend, especially if there's good weather. However, it may be difficult for beginners to find treks or paths that are easy enough to tackle. For expert hikers, they would want to find more and more similar or harder treks.
+It is also important to know that a given route is within your abilities as the person may not have the skills, equipment and confidence to tackle harder trails. This makes it a safety issue as well.
 
 ## 💡 Idea / Solution <a name = "idea"></a>
 
-This section is used to describe potential solutions.
+Our idea is to help hikers figure out their next trek by -
 
-Once the ideal, reality, and consequences sections have been
-completed, and understood, it becomes easier to provide a solution for solving the problem.
+- TTC - Time to complete the trek
+- Classification - Ranking a trek based on difficulty
+- Recommendation - Suggest similar routes based on requirement or difficulty levels
 
 ## ⛓️ Dependencies / Limitations <a name = "limitations"></a>
 
@@ -113,10 +104,10 @@ Add notes about how to use the system.
 
 ## ✍️ Authors <a name = "authors"></a>
 
-- [@kylelobo](https://github.com/kylelobo) - Idea & Initial work
-
-See also the list of [contributors](https://github.com/kylelobo/The-Documentation-Compendium/contributors)
-who participated in this project.
+- [@shashaaankk](https://github.com/shashaaankk/)
+- [@souviksaha97](https://github.com/souviksaha97/)
+- [@amoghsgk](https://github.com/amoghsgk)
+- [@priyanshjain25](https://github.com/priyanshjain25)
 
 ## 🎉 Acknowledgments <a name = "acknowledgments"></a>
 
