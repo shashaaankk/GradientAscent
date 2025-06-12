@@ -111,6 +111,4 @@ Add notes about how to use the system.
 
 ## 🎉 Acknowledgments <a name = "acknowledgments"></a>
 
-- Hat tip to anyone whose code was used
-- Inspiration
-- References
+Thanks @https://www.kaggle.com/roccoli for the dataset.
