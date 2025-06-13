@@ -3,7 +3,7 @@ import numpy as np
 import gpxpy
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import classification_report
 import os
 import glob
@@ -68,12 +68,13 @@ selected = df[["duration","length_3d", "min_elevation", "max_elevation", "break_
 X = selected
 #y = df['difficulty'].str[1].astype(int)
 
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
+# scaler = MinMaxScaler()
+# X_scaled = scaler.fit_transform(X)
 
 
 # Wrap back into a DataFrame, preserving column names
-X_scaled_df = pd.DataFrame(X_scaled, columns=X.columns)
+# X_scaled_df = pd.DataFrame(X_scaled, columns=X.columns)
 
 output_path = os.path.join("data", "output.csv")
-X_scaled_df.to_csv(output_path, index=False)
+# X_scaled_df.to_csv(output_path, index=False)
+X.to_csv(output_path, index=False)
