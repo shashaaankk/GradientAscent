@@ -6,6 +6,14 @@ import pandas as pd
 MODEL_PATH = "model/model.pkl"
 SCALER_PATH = "model/scaler.pkl"
 
+def load_model_and_scaler():
+    """
+    Load the pre-trained model and scaler from disk.
+    """
+    model = joblib.load(MODEL_PATH)
+    scaler = joblib.load(SCALER_PATH)
+    return model, scaler
+
 def analyze_gpx_stream(stream):
     """
     Read a GPX file-like stream, parse it, compute stats, and return a dict.
@@ -46,11 +54,9 @@ def analyze_gpx_stream(stream):
     if uphill > 600 or length_3d > 20_000:
         difficulty = "Hard"
         
-    # 6. Using model, predict the duration
-    model = joblib.load(MODEL_PATH)
-    scaler = joblib.load(SCALER_PATH)
-    
     # Prepare data for prediction
+    
+    model, scaler = load_model_and_scaler() # load model and scaler at the start of the function
     features = {
         "length_3d": length_3d,
         "uphill": uphill,
