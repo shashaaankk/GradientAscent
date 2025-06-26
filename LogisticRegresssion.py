@@ -1,93 +1,94 @@
-import pandas as pd
-import numpy as np
 import os
+import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.cluster import KMeans
-import matplotlib.pyplot as plt
-from sklearn.decomposition import PCA
-from mpl_toolkits.mplot3d import Axes3D  # noqa: F401 (needed for 3D projection)
-import seaborn as sns
+import joblib
 
-def visualize_PCA(X,kmeans):
-    pca = PCA(n_components=3)
-    X_pca = pca.fit_transform(X)
+# ------------------------------------------------------------------
+# CONFIGURATION
+# ------------------------------------------------------------------
+CSV_PATH = os.path.join("data", "output.csv")
 
-    # Get cluster labels (from KMeans)
-    clusters = kmeans.labels_
+# If you ever change the column order inside output.csv,
+# update this list to match it exactly.
+FEATURES = [
+    "duration",
+    "length_3d",
+    "min_elevation",
+    "max_elevation",
+    "break_time",
+    "uphill",
+    "downhill",
+]
 
-    # Plot
-    fig = plt.figure(figsize=(10, 7))
-    ax = fig.add_subplot(111, projection='3d')
+from sklearn.neighbors import NearestNeighbors     # NEW import
 
-    # Use seaborn color palette
-    palette = sns.color_palette("Set2", 3)
-
-    # Plot each cluster in a different color
-    for cluster_id in range(3):
-        mask = clusters == cluster_id
-        ax.scatter(
-            X_pca[mask, 0], X_pca[mask, 1], X_pca[mask, 2],
-            label=f"Cluster {cluster_id}", color=palette[cluster_id], s=40
-        )
-
-    ax.set_title("3D Scatter Plot of Hiking Data Clusters")
-    ax.set_xlabel("PCA 1")
-    ax.set_ylabel("PCA 2")
-    ax.set_zlabel("PCA 3")
-    ax.legend()
-    plt.tight_layout()
-    plt.show()
-
-def visualize_3D_clusters(X, kmeans):
-    """
-    Visualizes 3D clustering results using the original 3D features in X.
-    
-    Parameters:
-        X (DataFrame or ndarray): Input data with exactly 3 columns.
-        kmeans (KMeans): Fitted KMeans model with `.labels_`.
-    """
-    # Convert to NumPy array if it's a DataFrame
-    X_np = X.values if hasattr(X, "values") else X
-    clusters = kmeans.labels_
-
-    fig = plt.figure(figsize=(10, 7))
-    ax = fig.add_subplot(111, projection='3d')
-
-    palette = sns.color_palette("Set2", np.unique(clusters).max() + 1)
-
-    for cluster_id in np.unique(clusters):
-        mask = clusters == cluster_id
-        ax.scatter(
-            X_np[mask, 0], X_np[mask, 1], X_np[mask, 2],
-            label=f"Cluster {cluster_id}", color=palette[cluster_id], s=40
-        )
-
-    ax.set_title("3D Scatter Plot of Clusters")
-    ax.set_xlabel("length_3d")
-    ax.set_ylabel("max_elevation")
-    ax.set_zlabel("break_time")
-    ax.legend()
-    plt.tight_layout()
-    plt.show()
-
-def main():
-    #selected = df[["duration","length_3d", "min_elevation", "max_elevation", "break_time", "uphill", "downhill"]]
-    csv_path = os.path.join("data", "output.csv")
+def train_model(csv_path: str = CSV_PATH, n_clusters: int = 3):
     df = pd.read_csv(csv_path)
-    print(df.head())
-    
-    kmeans = KMeans(n_clusters=3, random_state=42)
-    clusters = kmeans.fit_predict(df)
+    scaler = MinMaxScaler()
+    X_scaled = scaler.fit_transform(df[FEATURES])
 
-    # Add the cluster labels to your DataFrame
-    X_clustered = pd.DataFrame(df, columns=df.columns)
-    X_clustered["difficulty_cluster"] = clusters
+    # ---------- K-Means (unchanged) ----------
+    kmeans = KMeans(n_clusters=n_clusters, random_state=42)
+    clusters = kmeans.fit_predict(X_scaled)
+    df["cluster"] = clusters
 
-    #visualize_PCA(df,kmeans)
-    visualize_3D_clusters(df[["length_3d","max_elevation","duration"]],kmeans)
-    # Optional: Save to CSV
-    # X_clustered.to_csv("clustered_difficulty.csv", index=False)
+    cluster_order = (
+        df.groupby("cluster")["duration"].mean().sort_values().index
+    )
+    labels = ["Easy", "Medium", "Hard"]
+    cluster_map = {c: lbl for c, lbl in zip(cluster_order, labels)}
 
-    print(X_clustered["difficulty_cluster"].value_counts())
+    # ---------- NEW: 5-NN model ----------
+    nn = NearestNeighbors(n_neighbors=5, metric="euclidean")
+    nn.fit(X_scaled)
+
+    # Return everything you’ll need later
+    return {
+        "scaler":      scaler,
+        "kmeans":      kmeans,
+        "cluster_map": cluster_map,
+        "nn":          nn,
+        "X_scaled":    X_scaled,
+        "df_raw":      df.reset_index(drop=True)  # keep original rows
+    }
+
+# ------------------------------------------------------------------
+# INFERENCE
+# ------------------------------------------------------------------
+def predict_difficulty(row_df, artefacts):
+    X_scaled = artefacts["scaler"].transform(row_df[FEATURES])
+    cluster  = int(artefacts["kmeans"].predict(X_scaled)[0])
+    label    = artefacts["cluster_map"][cluster]
+    return label
+
+def get_nearest_hikes(row_df, artefacts, n_neighbors=5):
+    """
+    Returns a DataFrame with the `n_neighbors` nearest rows from the
+    original dataset, ordered by increasing distance.
+    """
+    X_scaled_query = artefacts["scaler"].transform(row_df[FEATURES])
+    distances, indices = artefacts["nn"].kneighbors(X_scaled_query, n_neighbors=n_neighbors)
+    out = artefacts["df_raw"].iloc[indices[0]].copy()
+    out["distance"] = distances[0]
+    return out.reset_index(drop=True)
+
+# ------------------------------------------------------------------
+# EXAMPLE USAGE
+# ------------------------------------------------------------------
 if __name__ == "__main__":
-    main()
+    artefacts = train_model()                      # one-off training
+
+    new_hike = pd.DataFrame(
+        [[5000, 7500, 400, 1600, 600, 1200, 1300]],
+        columns=FEATURES
+    )
+
+    diff = predict_difficulty(new_hike, artefacts)
+    print(f"Predicted cluster: {diff}")
+
+    nearest5 = get_nearest_hikes(new_hike, artefacts)
+    print("\nFive nearest hikes:\n", nearest5[["duration", "uphill", "downhill", "distance"]])
+
+
 
