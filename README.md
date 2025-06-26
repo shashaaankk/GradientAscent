@@ -6,10 +6,10 @@
 
 <div align="center">
 
-[![Hackathon](https://img.shields.io/badge/hackathon-name-orange.svg)](http://hackathon.url.com)
+[![Hackathon](https://img.shields.io/badge/hackathon-AISA-orange.svg)](https://www.ki.uni-stuttgart.de/departments/ac/research/projects/AISA/)
 [![Status](https://img.shields.io/badge/status-active-success.svg)]()
-[![GitHub Issues](https://img.shields.io/github/issues/kylelobo/The-Documentation-Compendium.svg)](https://github.com/kylelobo/The-Documentation-Compendium/issues)
-[![GitHub Pull Requests](https://img.shields.io/github/issues-pr/kylelobo/The-Documentation-Compendium.svg)](https://github.com/kylelobo/The-Documentation-Compendium/pulls)
+[![GitHub Issues](https://img.shields.io/github/issues/shashaaankk/GradientAscent.svg)](https://github.com/shashaaankk/GradientAscent)
+[![GitHub Pull Requests](https://img.shields.io/github/issues-pr/shashaaankk/GradientAscent.svg)](https://github.com/shashaaankk/GradientAscent/pulls)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
 
 </div>
