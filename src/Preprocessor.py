@@ -3,6 +3,8 @@ import numpy as np
 import gpxpy
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import train_test_split
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import classification_report
 import os
@@ -64,13 +66,27 @@ df["speed"] = df["length_3d"] / df["duration"]
 df = df[df["break_time"]>=0]
 df = df[df["break_time"]<1.5*df["duration"]]
 df = df[df["speed"]<5]
-selected = df[["duration","length_3d", "min_elevation", "max_elevation", "break_time", "uphill", "downhill"]]
+selected = df[["duration","length_3d", "min_elevation", "max_elevation", "uphill", "downhill", "break_time"]]  
 X = selected
-#y = df['difficulty'].str[1].astype(int)
+y = df['difficulty'].str[1].astype(int)
 
-# scaler = MinMaxScaler()
-# X_scaled = scaler.fit_transform(X)
+scaler = MinMaxScaler()
+X_scaled = scaler.fit_transform(X)
 
+X_train, X_test, y_train, y_test = train_test_split(
+        X_scaled, y, test_size=0.2, random_state=42, stratify=y
+    )
+
+model = AdaBoostClassifier(
+    estimator=DecisionTreeClassifier(max_depth=1),   # ← new name
+    n_estimators=50,
+    random_state=42
+)
+#model = LogisticRegression(multi_class='multinomial', solver='lbfgs', max_iter=1000)
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+print(classification_report(y_test, y_pred))
 
 # Wrap back into a DataFrame, preserving column names
 # X_scaled_df = pd.DataFrame(X_scaled, columns=X.columns)
