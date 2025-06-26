@@ -1,40 +1,49 @@
-
+// frontend/src/pages/Index.tsx
 import { useState } from "react";
-import { Navbar } from "../components/Navbar";
-import { HeroSection } from "../components/HeroSection";
-import { Dashboard } from "../components/Dashboard";
-import { UploadSection } from "../components/UploadSection";
-import { ResultCard } from "../components/ResultCard";
-import { RecommendedHikes } from "../components/RecommendedHikes";
+import { Navbar } from "@/components/Navbar";
+import { HeroSection } from "@/components/HeroSection";
+import { UploadSection } from "@/components/UploadSection";
+import { ResultCard } from "@/components/ResultCard";
+import { TrailStats } from "../types";
 
 const Index = () => {
-  const [currentView, setCurrentView] = useState<'hero' | 'dashboard'>('hero');
-  const [uploadedTrail, setUploadedTrail] = useState<any>(null);
+  const [view, setView] = useState<"hero" | "dashboard">("hero");
+  const [trail, setTrail] = useState<
+    (TrailStats & { name: string; location?: string }) | null
+  >(null);
 
-  const handleGetStarted = () => {
-    setCurrentView('dashboard');
-  };
+  const handleGetStarted = () => setView("dashboard");
 
-  const handleTrailAnalysis = (trailData: any) => {
-    setUploadedTrail(trailData);
+  const handleTrailAnalysis = (trailData: TrailStats) => {
+    // Attach a dummy image URL to each of the first 3 recommendations
+    const nearest_hikes = trailData.nearest_hikes.slice(0, 3).map((hike, i) => ({
+      ...hike,
+      image: `https://picsum.photos/seed/${i + 1}/300/180`,
+    }));
+
+    setTrail({
+      name: "Your Hike",         // replace with real GPX name if you have it
+      location: "Unknown",       // or from GPX metadata
+      ...trailData,
+      nearest_hikes,
+    });
   };
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
-      {currentView === 'hero' ? (
+
+      {view === "hero" ? (
         <HeroSection onGetStarted={handleGetStarted} />
       ) : (
         <div className="container mx-auto px-4 py-8 max-w-6xl">
           <UploadSection onTrailAnalysis={handleTrailAnalysis} />
-          
-          {uploadedTrail && (
+
+          {trail && (
             <div className="mt-8">
-              <ResultCard trail={uploadedTrail} />
+              <ResultCard trail={trail} />
             </div>
           )}
-          
         </div>
       )}
     </div>

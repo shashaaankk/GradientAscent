@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Clock, TrendingUp, Mountain, ArrowRight } from "lucide-react";
 
-const recommendedHikes = [
+export const recommendedHikes = [
   {
     id: "1",
     name: "Meadow Creek Trail",
