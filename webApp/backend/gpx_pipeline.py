@@ -26,8 +26,8 @@ _diff_df_raw   = joblib.load(DIFF_DF_RAW_PATH)
 _names_df     = joblib.load(NAMES_DF_PATH)
 
 
-print(_names_df.columns)   # should include 'name'
-print(_names_df.head())
+# print(_names_df.columns)   # should include 'name'
+# print(_names_df.head())
 
 DIFF_FEATURES = [
     "length_3d",
@@ -125,7 +125,7 @@ def analyze_gpx_stream(stream):
     distances, indices = _diff_nn.kneighbors(Xd, n_neighbors=3)
     neigh_df = _diff_df_raw.iloc[indices[0]].reset_index(drop=True)
     neighbor_ids = indices[0]
-    neigh_df["name"] = _names_df["name"].iloc[neighbor_ids].values
+    #neigh_df["name"] = _names_df["name"].iloc[neighbor_ids].values
     # Convert units:
     # - duration to hours/minutes
     # - other stats remain in meters
