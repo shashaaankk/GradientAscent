@@ -1,7 +1,6 @@
 *.zip
 *.csv
 .venv/**
-*.pkl
 *.pyc
 *.pyo
 *.pyd
