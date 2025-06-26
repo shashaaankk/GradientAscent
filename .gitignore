@@ -2,3 +2,7 @@
 *.csv
 .venv/**
 *.pkl
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
