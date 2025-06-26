@@ -12,6 +12,7 @@ from sklearn.ensemble import RandomForestRegressor
 # from sklearn.linear_model import Ridge
 
 SCALER_PATH = os.path.join("data", "scaler.pkl")
+MODEL_PATH = os.path.join("data", "model.pkl")
 
 def load_and_preprocess_data(csv_path):
     df = pd.read_csv(csv_path)
@@ -142,7 +143,7 @@ def main():
     compare_predictions(model, X_train, y_train)
     plot_feature_importance(model, X_train.columns)
     plot_residuals(y_test, y_pred)
-
+    joblib.dump(model, MODEL_PATH)
     # Predict from user input
     # user_input = get_user_input()
     # predict_from_input(model, user_input)

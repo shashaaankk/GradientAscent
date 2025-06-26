@@ -1,5 +1,18 @@
 # backend/gpx_pipeline.py
 import gpxpy
+import joblib
+import pandas as pd
+
+MODEL_PATH = "model/model.pkl"
+SCALER_PATH = "model/scaler.pkl"
+
+def load_model_and_scaler():
+    """
+    Load the pre-trained model and scaler from disk.
+    """
+    model = joblib.load(MODEL_PATH)
+    scaler = joblib.load(SCALER_PATH)
+    return model, scaler
 
 def analyze_gpx_stream(stream):
     """
@@ -40,6 +53,26 @@ def analyze_gpx_stream(stream):
         difficulty = "Moderate"
     if uphill > 600 or length_3d > 20_000:
         difficulty = "Hard"
+        
+    # Prepare data for prediction
+    
+    model, scaler = load_model_and_scaler() # load model and scaler at the start of the function
+    features = {
+        "length_3d": length_3d,
+        "uphill": uphill,
+        "downhill": downhill,
+        "min_elevation": min_elev,
+        "max_elevation": max_elev,
+        "break_time": break_time,
+    }
+    features_df = pd.DataFrame([features])
+    features_scaled = scaler.transform(features_df)
+    predicted_duration = model.predict(features_scaled)[0]
+    # If the model predicts a duration, use it instead of the GPX duration
+    if predicted_duration > 0:
+        duration = predicted_duration
+    else:
+        duration = total_time
 
     # 6. Return everything in one dict
     stats = {
