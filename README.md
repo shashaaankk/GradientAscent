@@ -10,7 +10,7 @@
 [![Status](https://img.shields.io/badge/status-active-success.svg)]()
 [![GitHub Issues](https://img.shields.io/github/issues/shashaaankk/GradientAscent.svg)](https://github.com/shashaaankk/GradientAscent)
 [![GitHub Pull Requests](https://img.shields.io/github/issues-pr/shashaaankk/GradientAscent.svg)](https://github.com/shashaaankk/GradientAscent/pulls)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
+[![License](https://img.shields.io/badge/license-GPLv3.svg)](LICENSE.md)
 
 </div>
 
