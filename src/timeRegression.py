@@ -16,7 +16,8 @@ MODEL_PATH = os.path.join("data", "model.pkl")
 
 def load_and_preprocess_data(csv_path):
     df = pd.read_csv(csv_path)
-    feature_cols = [col for col in df.columns if col not in ['duration', 'break_time']]
+    feature_cols = [col for col in df.columns if col not in 
+                    ['duration', 'break_time']]
     scaler = MinMaxScaler()
     X_scaled = scaler.fit_transform(df[feature_cols])
     df_scaled = pd.DataFrame(X_scaled, columns=feature_cols)

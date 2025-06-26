@@ -1,90 +1,60 @@
 # backend/gpx_pipeline.py
-import gpxpy
+
+import os
 import joblib
 import pandas as pd
+import gpxpy
 
-MODEL_PATH = "model/model.pkl"
-SCALER_PATH = "model/scaler.pkl"
+MODEL_PATH  = os.path.join("model", "model.pkl")
+SCALER_PATH = os.path.join("model", "scaler.pkl")
 
-def load_model_and_scaler():
-    """
-    Load the pre-trained model and scaler from disk.
-    """
-    model = joblib.load(MODEL_PATH)
-    scaler = joblib.load(SCALER_PATH)
-    return model, scaler
+# Load once
+_model  = joblib.load(MODEL_PATH)
+_scaler = joblib.load(SCALER_PATH)
 
 def analyze_gpx_stream(stream):
-    """
-    Read a GPX file-like stream, parse it, compute stats, and return a dict.
-    """
-    # 1. Parse the GPX
+    # 1. Parse
     gpx = gpxpy.parse(stream)
 
-
-    # 2. Flatten all track points
-    points = [
+    # 2. Flatten points
+    pts = [
         pt
-        for track in gpx.tracks
-        for seg in track.segments
+        for tr in gpx.tracks
+        for seg in tr.segments
         for pt in seg.points
     ]
-    if len(points) < 2:
+    if len(pts) < 2:
         raise ValueError("Not enough data points")
-    
-    # DUMMY LOGIC: TO BE REPLACED WITH REAL ANALYSIS
 
-    # 3. Compute core stats
-    length_3d = gpx.length_3d()
-    duration = gpx.get_duration() or 0
-    uphill, downhill = gpx.get_uphill_downhill()
-    elevations = [pt.elevation for pt in points]
-    min_elev, max_elev = min(elevations), max(elevations)
+    # 3. Compute core stats (the exact features your scaler/model expect)
+    length_3d    = gpx.length_3d()               # meters
+    duration_obs = gpx.get_duration() or 0       # seconds
+    uphill, downhill = gpx.get_uphill_downhill() # meters up/down
+    elevations   = [pt.elevation for pt in pts]
+    min_elev, max_elev = float(min(elevations)), float(max(elevations))
 
-    # 4. Time, speed, break
-    start, end = points[0].time, points[-1].time
-    total_time = (end - start).total_seconds()
-    speed = length_3d / duration if duration else 0
-    break_time = total_time - duration
-
-    # 5. Difficulty heuristic
-    difficulty = "Easy"
-    if uphill > 300 or length_3d > 10_000:
-        difficulty = "Moderate"
-    if uphill > 600 or length_3d > 20_000:
-        difficulty = "Hard"
-        
-    # Prepare data for prediction
-    
-    model, scaler = load_model_and_scaler() # load model and scaler at the start of the function
-    features = {
-        "length_3d": length_3d,
-        "uphill": uphill,
-        "downhill": downhill,
+    # 4. Build DataFrame with exactly those five columns
+    feat_df = pd.DataFrame([{
+        "length_3d":     length_3d,
         "min_elevation": min_elev,
         "max_elevation": max_elev,
-        "break_time": break_time,
-    }
-    features_df = pd.DataFrame([features])
-    features_scaled = scaler.transform(features_df)
-    predicted_duration = model.predict(features_scaled)[0]
-    # If the model predicts a duration, use it instead of the GPX duration
-    if predicted_duration > 0:
-        duration = predicted_duration
-    else:
-        duration = total_time
+        "uphill":        uphill,
+        "downhill":      downhill,
+    }])
 
-    # 6. Return everything in one dict
-    stats = {
-        "duration_sec":       round(duration, 2),
-        "length_3d_m":        round(length_3d, 2),
-        "min_elevation_m":    round(min_elev, 2),
-        "max_elevation_m":    round(max_elev, 2),
-        "break_time_sec":     round(break_time, 2),
-        "uphill_m":           round(uphill, 2),
-        "downhill_m":         round(downhill, 2),
-        "speed_mps":          round(speed, 2),
-        "difficulty":         difficulty,
-    }
+    # 5. Scale & predict
+    X_scaled     = _scaler.transform(feat_df)
+    pred_seconds = float(_model.predict(X_scaled)[0])
+    pred_hours   = pred_seconds / 3600.0
+    print(f"Predicted duration: {pred_seconds} seconds ({pred_hours} hours)")
 
-    return stats
+    # 6. Return raw stats + prediction
+    return {
+        "length_3d_m":           round(length_3d, 2),
+        "uphill_m":              round(uphill, 2),
+        "downhill_m":            round(downhill, 2),
+        "min_elevation_m":       round(min_elev, 2),
+        "max_elevation_m":       round(max_elev, 2),
+        "observed_duration_sec": round(duration_obs, 2),
+        "predicted_duration_hr": round(pred_hours, 2),
+    }
